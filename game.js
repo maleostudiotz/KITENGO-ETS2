@@ -2,8 +2,9 @@
 const firebaseConfig = {
   apiKey: "AIzaSyDA0ty5dOoBiPJx5fRdFI_hvddJyUbb6B4",
   authDomain: "msisi-38c20.firebaseapp.com",
-  projectId: "msisi-38c20",
   databaseURL: "https://msisi-38c20-default-rtdb.firebaseio.com",
+  projectId: "msisi-38c20",
+  storageBucket: "msisi-38c20.appspot.com",
   messagingSenderId: "881060609707",
   appId: "1:881060609707:web:bd9028db2b20c75d72c1ee",
   measurementId: "G-NFT0FB6V2T"
@@ -15,6 +16,23 @@ if (!firebase.apps.length) {
 }
 const database = firebase.database();
 
+// GLOBAL LOADING ANIMATION HELPER FUNCTIONS
+window.showLoading = function(message = "Inapakia, subiri kidogo...") {
+    const overlay = document.getElementById("global-loading-overlay");
+    if (overlay) {
+        const txt = overlay.querySelector(".loader-text");
+        if (txt) txt.textContent = message;
+        overlay.style.display = "flex";
+    }
+};
+
+window.hideLoading = function() {
+    const overlay = document.getElementById("global-loading-overlay");
+    if (overlay) {
+        overlay.style.display = "none";
+    }
+};
+
 window.hideAllSections = function() {
     const sections = ["cat", "bus-view-section", "details-view-section", "log", "reg", "adminSection"];
     sections.forEach(id => {
@@ -25,8 +43,19 @@ window.hideAllSections = function() {
     if (nav) nav.style.display = "none";
 };
 
-window.showlogin = function() { window.hideAllSections(); document.getElementById("log").style.display = "block"; };
-window.showregister = function() { window.hideAllSections(); document.getElementById("reg").style.display = "block"; };
+window.showlogin = function() { 
+    window.showLoading("Inafungua Login...");
+    window.hideAllSections(); 
+    document.getElementById("log").style.display = "block"; 
+    window.hideLoading();
+};
+
+window.showregister = function() { 
+    window.showLoading("Inafungua Usajili...");
+    window.hideAllSections(); 
+    document.getElementById("reg").style.display = "block"; 
+    window.hideLoading();
+};
 
 window.register = function() {
     let name = document.getElementById("regname").value.trim();
@@ -35,11 +64,15 @@ window.register = function() {
     if (name === "" || email === "" || password === "") { 
         alert("Jaza nafasi zote!"); 
     } else { 
-        localStorage.setItem("name", name); 
-        localStorage.setItem("email", email); 
-        localStorage.setItem("password", password);
-        alert("Hongera mkuu registration yako imekamilika!"); 
-        window.showlogin();
+        window.showLoading("Inasajili akaunti yako...");
+        setTimeout(() => {
+            localStorage.setItem("name", name); 
+            localStorage.setItem("email", email); 
+            localStorage.setItem("password", password);
+            window.hideLoading();
+            alert("Hongera mkuu registration yako imekamilika!"); 
+            window.showlogin();
+        }, 500);
     }
 };
 
@@ -52,25 +85,36 @@ window.login = function() {
     if (name === "" || password === "") { 
         alert("Jaza nafasi zote!"); 
     } else if (name === dbname && password === dbpassword) {
-        alert("HONGERA SANA KARIBU KITENGO GAMING !"); 
-        history.replaceState({ page: "home" }, "Home", "#home"); 
-        window.showcat(true); 
+        window.showLoading("Inaingia Kitengo Gaming...");
+        setTimeout(() => {
+            window.hideLoading();
+            alert("HONGERA SANA KARIBU KITENGO GAMING !"); 
+            history.replaceState({ page: "home" }, "Home", "#home"); 
+            window.showcat(true); 
+        }, 500);
     } else { 
         alert("Taarifa ulizoweka sio sahihi!"); 
     }
 };
 
 window.showcat = function(isBackAction = false) {
+    window.showLoading("Inapakia Ukurasa wa Nyumbani...");
     let dbname = localStorage.getItem("name");
-    if(!dbname) { window.showregister(); return; }
+    if(!dbname) { 
+        window.hideLoading();
+        window.showregister(); 
+        return; 
+    }
     window.hideAllSections();
     document.getElementById("cat").style.display = "block";
     document.getElementById("navicon").style.display = "flex"; 
     if (!isBackAction) history.pushState({ page: "home" }, "Home", "#home");
+    window.hideLoading();
 };
 
-// LOGIC YA KICHUNGI CHA PREMIUM VS FREE + PASSWORD MODAL PREPARATION
-window.showDetails = function(title, image, desc, type, targetLinkOrId, currentCatId = '', currentCatName = '', price = 0, busKey = '') {
+// LOGIC YA KICHUNGI CHA PREMIUM VS FREE + PASSWORD MODAL PREPARATION + TIKTOK SETUP VIDEO BUTTON
+window.showDetails = function(title, image, desc, type, targetLinkOrId, currentCatId = '', currentCatName = '', price = 0, busKey = '', setLink = '') {
+    window.showLoading("Inapakia maelezo ya Mod...");
     window.hideAllSections();
     document.getElementById("details-view-section").style.display = "block";
     document.getElementById("navicon").style.display = "flex";
@@ -81,6 +125,7 @@ window.showDetails = function(title, image, desc, type, targetLinkOrId, currentC
     
     let btnContainer = document.getElementById("details-action-btn");
     btnContainer.innerHTML = "";
+    btnContainer.style.cssText = "display: flex; gap: 10px; align-items: center; justify-content: center; margin-top: 15px; width: 100%; flex-wrap: wrap;";
     
     if (type === 'category') {
         let btn = document.createElement("button");
@@ -92,7 +137,7 @@ window.showDetails = function(title, image, desc, type, targetLinkOrId, currentC
         window.currentDetailsBack = function() { window.showcat(); };
     } else {
         let btn = document.createElement("button");
-        btn.style.cssText = "background: linear-gradient(135deg, #7139e8, #45f3ff); color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; min-height: 44px;";
+        btn.style.cssText = "background: linear-gradient(135deg, #7139e8, #45f3ff); color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; flex: 1; min-height: 44px;";
         
         if (price && parseInt(price) > 0) {
             btn.textContent = `DOWNLOAD NOW (Tsh ${price})`;
@@ -106,12 +151,26 @@ window.showDetails = function(title, image, desc, type, targetLinkOrId, currentC
             a.textContent = "DOWNLOAD NOW";
             a.style.color = "#ffffff";
             a.style.textDecoration = "none";
+            a.style.display = "block";
+            a.style.width = "100%";
             btn.appendChild(a);
         }
         
         btnContainer.appendChild(btn);
+
+        // KA-BUTTON KA SETUP VIDEO (TikTok Video Link)
+        if (setLink && setLink.trim() !== "") {
+            let setBtn = document.createElement("a");
+            setBtn.href = setLink;
+            setBtn.target = "_blank";
+            setBtn.textContent = "SETUP VIDEO";
+            setBtn.style.cssText = "background: linear-gradient(135deg, #ff007f, #7139e8); color: white; border: none; padding: 12px 18px; border-radius: 10px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; min-height: 44px; font-family: 'Orbitron', sans-serif; box-shadow: 0 0 10px rgba(255,0,127,0.5);";
+            btnContainer.appendChild(setBtn);
+        }
+        
         window.currentDetailsBack = function() { window.showBusCategory(currentCatId, currentCatName); };
     }
+    window.hideLoading();
 };
 
 window.openPasswordModal = function(itemName, itemPrice, downloadLink, categoryId, busKey) {
@@ -158,8 +217,11 @@ window.verifyPasswordAndDownload = function() {
     statusLog.style.color = "yellow";
     statusLog.textContent = "SUBIRI KWANZA MAANA PASSWORD YAKO INAHAKIKIWA  ...";
     
+    window.showLoading("Inahakiki Password...");
+    
     database.ref(`buses/${catId}/${busKey}/password`).once('value')
     .then((snapshot) => {
+        window.hideLoading();
         const correctPassword = snapshot.val();
         
         if (correctPassword && passwordInput === correctPassword.toString().trim()) {
@@ -176,6 +238,7 @@ window.verifyPasswordAndDownload = function() {
         }
     })
     .catch((err) => {
+        window.hideLoading();
         statusLog.style.color = "red";
         statusLog.textContent = "CONNECTION ERROR: " + err.message;
     });
@@ -221,6 +284,7 @@ window.compressImage = function(file, maxWidth, maxHeight, quality, callback) {
             callback(compressedBase64);
         };
         img.onerror = function() {
+            window.hideLoading();
             alert("Hitilafu kwenye picha! Jaribu picha nyingine.");
         };
         img.src = event.target.result;
@@ -238,9 +302,7 @@ window.addCategory = function() {
     if (id === "" || name === "") { alert("Jaza ID na Jina!"); return; }
     if (fileInput.files.length === 0) { alert("Chagua picha ya kundi!"); return; }
     
-    const statusDiv = document.getElementById("cat-upload-status");
-    statusDiv.style.display = "block";
-    statusDiv.textContent = "Inashindilia picha ya kundi kwa kasi kubwa...";
+    window.showLoading("Inashindilia na kuongeza Category mpya...");
     
     const file = fileInput.files[0];
     
@@ -251,29 +313,34 @@ window.addCategory = function() {
             desc: desc
         })
         .then(() => {
+            window.hideLoading();
             alert("Kundi jipya limeongezwa!");
             document.getElementById("newCatId").value = "";
             document.getElementById("newCatName").value = "";
             document.getElementById("newCatDesc").value = "";
             fileInput.value = "";
-            statusDiv.style.display = "none";
         }).catch(err => {
+            window.hideLoading();
             alert("Kosa: " + err.message);
-            statusDiv.style.display = "none";
         });
     });
 };
 
-// RENDER CATEGORIES KWA WAKATI MUPYA (REALTIME LISTENER)
+// RENDER CATEGORIES KWA WAKATI MUPYA (REALTIME LISTENER & KUHARIRI CATEGORY)
 window.loadCategories = function() {
     database.ref('categories').on('value', (snapshot) => {
         const categories = snapshot.val() || {};
         let categorySelect = document.getElementById("uploadCategory");
         if(categorySelect) categorySelect.innerHTML = '<option value="">-- Chagua Category --</option>';
         
+        let editCatSelect = document.getElementById("editCategorySelect");
+        if(editCatSelect) editCatSelect.innerHTML = '<option value="">-- Chagua Category ya Kuhariri --</option>';
+
         let catContainer = document.getElementById("categories-container");
         if(catContainer) catContainer.innerHTML = "";
         
+        let isAdmin = window.location.hash === "#admin";
+
         for (const [key, cat] of Object.entries(categories)) {
             if(categorySelect) {
                 const opt = document.createElement("option");
@@ -281,27 +348,50 @@ window.loadCategories = function() {
                 opt.textContent = cat.name;
                 categorySelect.appendChild(opt);
             }
+
+            if(editCatSelect) {
+                const opt = document.createElement("option");
+                opt.value = key;
+                opt.textContent = cat.name;
+                editCatSelect.appendChild(opt);
+            }
             
             if(catContainer) {
                 const card = document.createElement("div");
                 card.className = "card category-card";
-                card.onclick = function() {
-                    window.showBusCategory(key, cat.name, false);
-                };
                 
-                card.innerHTML = `
-                    <div class="card-img-wrapper">
-                        <img src="${cat.image}" alt="${cat.name}">
-                    </div>
-                    <div class="card-content">
-                        <span class="card-tag">CATEGORY</span>
-                        <div class="card-title">${cat.name}</div>
-                        <div class="card-footer">
-                            <span>${cat.desc || 'Mods available'}</span>
-                            <span class="card-action-icon">&rsaquo;</span>
+                if (isAdmin) {
+                    card.innerHTML = `
+                        <div class="admin-card-wrapper" data-cat="${key}">
+                            <div style="position: relative;">
+                                <img src="${cat.image}" alt="${cat.name}" class="editable-cat-image" style="width: 100%; height: 160px; object-fit: cover; border-radius: 12px; cursor: pointer;">
+                            </div>
+                            <h3 style="margin: 10px 0 5px 0; color: #45f3ff; font-size:15px;">${cat.name}</h3>
+                            <p class="editable-cat-desc" style="margin: 5px 0; cursor: pointer; color: #a4a6b0; font-size:12px; background: rgba(0,0,0,0.3); padding: 5px; border-radius: 5px;">${cat.desc ? cat.desc : 'Bonyeza hapa sekunde 3 kuedit maelezo ya category'}</p>
+                            <p style="color:#00ff88; font-size:11px; margin:2px 0;">(Bonyeza picha au maelezo sekunde 3 kuhariri)</p>
+                            <button onclick="window.showBusCategory('${key}', '${cat.name}', true)" style="background: #7139e8; color:white; border:none; padding:8px; border-radius:8px; width:100%; margin-top:8px; font-weight:bold; cursor:pointer;">TAZAMA MABASI YA CATEGORY HII</button>
                         </div>
-                    </div>
-                `;
+                    `;
+                    window.setupCategoryAdminListeners(card, key, cat);
+                } else {
+                    card.onclick = function() {
+                        window.showBusCategory(key, cat.name, false);
+                    };
+                    
+                    card.innerHTML = `
+                        <div class="card-img-wrapper">
+                            <img src="${cat.image}" alt="${cat.name}">
+                        </div>
+                        <div class="card-content">
+                            <span class="card-tag">CATEGORY</span>
+                            <div class="card-title">${cat.name}</div>
+                            <div class="card-footer">
+                                <span>${cat.desc || 'Mods available'}</span>
+                                <span class="card-action-icon">&rsaquo;</span>
+                            </div>
+                        </div>
+                    `;
+                }
                 
                 catContainer.appendChild(card);
             }
@@ -309,7 +399,7 @@ window.loadCategories = function() {
         
         let adminCatSelect = document.getElementById("adminCategorySelect");
         if (adminCatSelect) {
-            adminCatSelect.innerHTML = '<option value="">-- Chagua Category ya Kuhariri --</option>';
+            adminCatSelect.innerHTML = '<option value="">-- Chagua Category ya Kuhariri Mabasi --</option>';
             for (const [key, cat] of Object.entries(categories)) {
                 const opt = document.createElement("option");
                 opt.value = key;
@@ -318,6 +408,84 @@ window.loadCategories = function() {
             }
         }
     });
+};
+
+// SETUP LONG PRESS LISTENERS KWA KUHARIRI CATEGORY (PICHA NA MAELEZO)
+window.setupCategoryAdminListeners = function(card, catKey, catData) {
+    const descEl = card.querySelector('.editable-cat-desc');
+    const imageEl = card.querySelector('.editable-cat-image');
+    let pressTimer;
+
+    const bindLongPress = (element, callback) => {
+        if (!element) return;
+        
+        element.addEventListener('touchstart', (e) => { 
+            pressTimer = setTimeout(() => { callback(); }, 3000); 
+        });
+        element.addEventListener('touchend', () => clearTimeout(pressTimer));
+        element.addEventListener('touchmove', () => clearTimeout(pressTimer));
+        
+        element.addEventListener('mousedown', () => {
+            pressTimer = setTimeout(() => { callback(); }, 3000);
+        });
+        element.addEventListener('mouseup', () => clearTimeout(pressTimer));
+        element.addEventListener('mouseleave', () => clearTimeout(pressTimer));
+    };
+    
+    bindLongPress(imageEl, () => window.editCategoryImage(catKey));
+    bindLongPress(descEl, () => window.editCategoryDesc(catKey, catData.desc || ''));
+};
+
+window.inspectCategoryForEdit = function() {
+    let catId = document.getElementById("editCategorySelect").value;
+    if(!catId) { alert("Tafadhali chagua category!"); return; }
+    database.ref('categories/' + catId).once('value').then(snapshot => {
+        let cat = snapshot.val();
+        if(cat) {
+            window.showcat(true);
+        }
+    });
+};
+
+window.editCategoryDesc = function(catKey, currentDesc) {
+    const newDesc = prompt(`Badilisha maelezo ya Category:\n\n(Sasa: ${currentDesc})`, currentDesc);
+    if (newDesc !== null && newDesc !== currentDesc) {
+        window.showLoading("Inahifadhi maelezo mapya...");
+        database.ref(`categories/${catKey}/desc`).set(newDesc)
+            .then(() => {
+                window.hideLoading();
+                alert('Maelezo ya category yamebadilishwa!');
+            })
+            .catch(err => {
+                window.hideLoading();
+                alert('Kosa: ' + err.message);
+            });
+    }
+};
+
+window.editCategoryImage = function(catKey) {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    
+    fileInput.onchange = function() {
+        if (this.files.length > 0) {
+            const file = this.files[0];
+            window.showLoading("Inashindilia na kubadilisha picha ya category...");
+            window.compressImage(file, 400, 400, 0.4, function(compressedBase64) {
+                database.ref(`categories/${catKey}/image`).set(compressedBase64)
+                    .then(() => {
+                        window.hideLoading();
+                        alert('Picha ya category imebadilishwa kikamilifu!');
+                    })
+                    .catch(err => {
+                        window.hideLoading();
+                        alert('Kosa: ' + err.message);
+                    });
+            });
+        }
+    };
+    fileInput.click();
 };
 
 // LOGO SLIDESHOW
@@ -382,39 +550,36 @@ window.addSlideshowItem = function() {
     if (!fileInput || fileInput.files.length === 0) { alert('Chagua picha au video kwanza!'); return; }
 
     const file = fileInput.files[0];
-    const statusDiv = document.getElementById('slideshow-upload-status');
     const isVideo = file.type.startsWith('video/');
 
-    if (statusDiv) statusDiv.style.display = 'block';
+    window.showLoading(isVideo ? "Inapakia video kwenye slideshow..." : "Inashindilia picha ya slideshow...");
 
     if (isVideo) {
-        if (statusDiv) statusDiv.textContent = 'Inapakia video, subiri...';
         const reader = new FileReader();
         reader.onload = function(e) {
             database.ref('slideshow').push().set({ type: 'video', src: e.target.result })
             .then(() => {
+                window.hideLoading();
                 alert('Video imeongezwa kwenye slideshow!');
                 fileInput.value = '';
-                if (statusDiv) statusDiv.style.display = 'none';
                 window.loadSlideshowAdminList();
             }).catch(err => {
+                window.hideLoading();
                 alert('Kosa: ' + err.message);
-                if (statusDiv) statusDiv.style.display = 'none';
             });
         };
         reader.readAsDataURL(file);
     } else {
-        if (statusDiv) statusDiv.textContent = 'Inashindilia picha...';
         window.compressImage(file, 1000, 600, 0.5, function(compressedBase64) {
             database.ref('slideshow').push().set({ type: 'image', src: compressedBase64 })
             .then(() => {
+                window.hideLoading();
                 alert('Picha imeongezwa kwenye slideshow!');
                 fileInput.value = '';
-                if (statusDiv) statusDiv.style.display = 'none';
                 window.loadSlideshowAdminList();
             }).catch(err => {
+                window.hideLoading();
                 alert('Kosa: ' + err.message);
-                if (statusDiv) statusDiv.style.display = 'none';
             });
         });
     }
@@ -452,15 +617,21 @@ window.loadSlideshowAdminList = function() {
 
 window.deleteSlideshowItem = function(key) {
     if (confirm('Unataka kufuta hii kwenye slideshow?')) {
+        window.showLoading("Inafuta...");
         database.ref('slideshow/' + key).remove()
         .then(() => {
+            window.hideLoading();
             window.loadSlideshowAdminList();
-        }).catch(err => alert('Kosa: ' + err.message));
+        }).catch(err => {
+            window.hideLoading();
+            alert('Kosa: ' + err.message);
+        });
     }
 };
 
 // ONYESHA MABASI YA CATEGORY ILIYOCHAGULIWA
 window.showBusCategory = function(catId, catName, isAdminMode = false) {
+    window.showLoading(`Inafungua Category: ${catName}...`);
     database.ref('buses/' + catId).once('value', (snapshot) => {
         const buses = snapshot.val() || {};
         
@@ -490,7 +661,9 @@ window.showBusCategory = function(catId, catName, isAdminMode = false) {
                             <img src="${bus.image}" alt="${bus.name}" class="editable-image" style="width: 100%; height: 160px; object-fit: cover; border-radius: 12px; cursor: pointer;">
                         </div>
                         <h3 class="editable-title" style="margin: 10px 0 5px 0; cursor: pointer; color: #45f3ff; font-size:15px;">${bus.name}</h3>
+                        <p class="editable-desc" style="margin: 5px 0; cursor: pointer; color: #a4a6b0; font-size:12px; background: rgba(0,0,0,0.3); padding: 5px; border-radius: 5px;">${bus.desc ? bus.desc : 'Bonyeza hapa sekunde 3 kuedit caption/maelezo'}</p>
                         <p class="editable-price" style="margin: 0; color: #ff007f; font-weight: bold; cursor: pointer; font-size:13px;">Tsh ${bus.price || 0}</p>
+                        <p class="editable-setlink" style="margin: 5px 0; color: #00ff88; font-weight: bold; cursor: pointer; font-size:11px; word-break: break-all;">TikTok Link: ${bus.setLink ? bus.setLink : 'Haikuwekwa (Bonyeza sekunde 3 kuweka)'}</p>
                         <div style="display: flex; gap: 8px; margin-top:10px;">
                             <button onclick="window.deleteBus('${catId}', '${key}')" style="flex: 1; background-color: #ff0000; padding:6px; font-size:12px; min-height:36px;">FUTA</button>
                             <button onclick="window.reloadCategoryView('${catId}', '${catName}')" style="flex: 1; padding:6px; font-size:12px; min-height:36px;">REFRESH</button>
@@ -499,7 +672,7 @@ window.showBusCategory = function(catId, catName, isAdminMode = false) {
                 `;
             } else {
                 card.onclick = function() {
-                    window.showDetails(bus.name, bus.image, bus.desc, 'bus', bus.link, catId, catName, bus.price || 0, key);
+                    window.showDetails(bus.name, bus.image, bus.desc, 'bus', bus.link, catId, catName, bus.price || 0, key, bus.setLink || '');
                 };
                 
                 card.innerHTML = `
@@ -539,6 +712,7 @@ window.showBusCategory = function(catId, catName, isAdminMode = false) {
             }
         };
         busList.parentElement.insertBefore(backBtn, busList.nextSibling);
+        window.hideLoading();
     });
 };
 
@@ -546,35 +720,52 @@ window.reloadCategoryView = function(catId, catName) {
     window.showBusCategory(catId, catName, true);
 };
 
+// LISTENERS KWA UPANDE WA ADMIN (INAHUSISHA PRESS KWA SEKUNDE 3)
 window.setupAdminCardListeners = function(card, catId, key, bus) {
     const titleEl = card.querySelector('.editable-title');
+    const descEl = card.querySelector('.editable-desc');
     const priceEl = card.querySelector('.editable-price');
+    const setLinkEl = card.querySelector('.editable-setlink');
     const imageEl = card.querySelector('.editable-image');
     let pressTimer;
+
+    const bindLongPress = (element, callback) => {
+        if (!element) return;
+        
+        element.addEventListener('touchstart', (e) => { 
+            pressTimer = setTimeout(() => { callback(); }, 3000); 
+        });
+        element.addEventListener('touchend', () => clearTimeout(pressTimer));
+        element.addEventListener('touchmove', () => clearTimeout(pressTimer));
+        
+        element.addEventListener('mousedown', () => {
+            pressTimer = setTimeout(() => { callback(); }, 3000);
+        });
+        element.addEventListener('mouseup', () => clearTimeout(pressTimer));
+        element.addEventListener('mouseleave', () => clearTimeout(pressTimer));
+    };
     
-    if (imageEl) {
-        imageEl.addEventListener('touchstart', () => { pressTimer = setTimeout(() => { window.editBusImage(catId, key, bus); }, 3000); });
-        imageEl.addEventListener('touchend', () => clearTimeout(pressTimer));
-    }
-    if (titleEl) {
-        titleEl.addEventListener('touchstart', () => { pressTimer = setTimeout(() => { window.editBusField(catId, key, 'name', bus.name, 'Jina la Mod'); }, 3000); });
-        titleEl.addEventListener('touchend', () => clearTimeout(pressTimer));
-    }
-    if (priceEl) {
-        priceEl.addEventListener('touchstart', () => { pressTimer = setTimeout(() => { window.editBusField(catId, key, 'price', bus.price || 0, 'Bei ya Mod'); }, 3000); });
-        priceEl.addEventListener('touchend', () => clearTimeout(pressTimer));
-    }
+    bindLongPress(imageEl, () => window.editBusImage(catId, key, bus));
+    bindLongPress(titleEl, () => window.editBusField(catId, key, 'name', bus.name, 'Jina la Mod'));
+    bindLongPress(descEl, () => window.editBusField(catId, key, 'desc', bus.desc || '', 'Maelezo / Caption ya Content'));
+    bindLongPress(priceEl, () => window.editBusField(catId, key, 'price', bus.price || 0, 'Bei ya Mod'));
+    bindLongPress(setLinkEl, () => window.editBusField(catId, key, 'setLink', bus.setLink || '', 'TikTok Video Link (Kama hautaki button ionekane acha wazi)'));
 };
 
 window.editBusField = function(catId, key, field, currentValue, label) {
     const newValue = prompt(`Badilisha ${label}:\n\n(Sasa: ${currentValue})`, currentValue);
     if (newValue !== null && newValue !== currentValue) {
+        window.showLoading("Inahifadhi mabadiliko...");
         database.ref(`buses/${catId}/${key}/${field}`).set(newValue)
             .then(() => {
+                window.hideLoading();
                 alert('Imebadilishwa kwa ufanisi!');
                 window.reloadCategoryView(catId, '');
             })
-            .catch(err => alert('Kosa: ' + err.message));
+            .catch(err => {
+                window.hideLoading();
+                alert('Kosa: ' + err.message);
+            });
     }
 };
 
@@ -586,13 +777,18 @@ window.editBusImage = function(catId, key, bus) {
     fileInput.onchange = function() {
         if (this.files.length > 0) {
             const file = this.files[0];
+            window.showLoading("Inashindilia na kubadili picha...");
             window.compressImage(file, 500, 500, 0.4, function(compressedBase64) {
                 database.ref(`buses/${catId}/${key}/image`).set(compressedBase64)
                     .then(() => {
+                        window.hideLoading();
                         alert('Picha imebadilishwa!');
                         window.reloadCategoryView(catId, '');
                     })
-                    .catch(err => alert('Kosa: ' + err.message));
+                    .catch(err => {
+                        window.hideLoading();
+                        alert('Kosa: ' + err.message);
+                    });
             });
         }
     };
@@ -604,6 +800,7 @@ window.uploadBus = function() {
     let cat = document.getElementById("uploadCategory").value;
     let name = document.getElementById("uploadName").value.trim();
     let link = document.getElementById("uploadLink").value.trim();
+    let setLink = document.getElementById("uploadSetLink").value.trim();
     let desc = document.getElementById("uploadDesc").value.trim();
     let price = document.getElementById("uploadPrice").value;
     let password = document.getElementById("uploadPassword").value.trim();
@@ -614,9 +811,7 @@ window.uploadBus = function() {
     if (fileInput.files.length === 0) { alert("Tafadhali chagua picha ya basi!"); return; }
     if (price && parseInt(price) > 0 && password === "") { alert("Tafadhali weka password ya mod hii ya kulipia!"); return; }
 
-    const statusDiv = document.getElementById("bus-upload-status");
-    statusDiv.style.display = "block";
-    statusDiv.textContent = "Inashindilia picha kwa kasi na kupakia Firebase...";
+    window.showLoading("Inashindilia picha kwa kasi na kupakia Firebase...");
 
     const file = fileInput.files[0];
 
@@ -626,23 +821,25 @@ window.uploadBus = function() {
             name: name, 
             image: compressedBase64, 
             link: link, 
+            setLink: setLink,
             desc: desc, 
             price: price ? parseInt(price) : 0,
             password: password ? password : "" 
         })
         .then(() => {
+            window.hideLoading();
             alert("Basi jipya limeongezwa kwa kasi ya ajabu!");
             document.getElementById("uploadName").value = "";
             document.getElementById("uploadDesc").value = "";
             document.getElementById("uploadLink").value = "";
+            document.getElementById("uploadSetLink").value = "";
             document.getElementById("uploadPrice").value = "";
             document.getElementById("uploadPassword").value = "";
             fileInput.value = "";
-            statusDiv.style.display = "none";
             window.showBusCategory(cat, "MABASI", true);
         }).catch(err => {
+            window.hideLoading();
             alert("Kosa la Firebase: " + err.message);
-            statusDiv.style.display = "none";
         });
     });
 };
@@ -650,11 +847,16 @@ window.uploadBus = function() {
 window.deleteCategory = function(categoryId) {
     if (!categoryId) { alert("Weka ID ya category unayotaka kuifuta."); return; }
     if(confirm("Je, una uhakika unataka kufuta GROUP la '" + categoryId + "' na kila kitu chake?")) {
+        window.showLoading("Inafuta Category...");
         database.ref('categories/' + categoryId).remove()
         .then(() => { 
             database.ref('buses/' + categoryId).remove(); 
+            window.hideLoading();
             alert("Vimefutwa!"); 
-        }).catch(err => alert("Kosa: " + err.message));
+        }).catch(err => {
+            window.hideLoading();
+            alert("Kosa: " + err.message);
+        });
     }
 };
 
@@ -664,28 +866,42 @@ window.clearEntireDatabase = function() {
 
     let confirmationText = prompt("ONYO KALI: Hii itafuta Categories zote na Mabasi yote!\n\nKama una uhakika, andika neno FUTA:");
     if (confirmationText === "FUTA") {
+        window.showLoading("Inasafisha Database yote...");
         database.ref().remove()
-        .then(() => { alert("Database yote imesafishwa!"); })
-        .catch(err => alert("Kosa: " + err.message));
+        .then(() => { 
+            window.hideLoading();
+            alert("Database yote imesafishwa!"); 
+        })
+        .catch(err => {
+            window.hideLoading();
+            alert("Kosa: " + err.message);
+        });
     } else { alert("Zoezi limesitishwa."); }
 };
 
 window.deleteBus = function(category, key) {
     if(confirm("Unataka kufuta basi hili?")) {
+        window.showLoading("Inafuta Basi...");
         database.ref('buses/' + category + '/' + key).remove()
         .then(() => {
+            window.hideLoading();
             alert("Basi limefutwa!");
             window.showBusCategory(category, "MABASI", true);
         })
-        .catch(err => alert("Kosa: " + err.message));
+        .catch(err => {
+            window.hideLoading();
+            alert("Kosa: " + err.message);
+        });
     }
 };
 
 window.showAdminPanel = function() {
+    window.showLoading("Inafungua Admin Panel...");
     window.hideAllSections();
     document.getElementById("adminSection").style.display = "block";
     window.loadCategories();
     window.loadSlideshowAdminList();
+    window.hideLoading();
 };
 
 window.checkCurrentLocation = function() {
@@ -739,7 +955,7 @@ window.handleSearchInput = function(query) {
                 const card = document.createElement("div");
                 card.className = "card bus-card";
                 card.onclick = function() {
-                    window.showDetails(bus.name, bus.image, bus.desc, 'bus', bus.link, item.catId, 'SEARCH', bus.price || 0, item.busKey);
+                    window.showDetails(bus.name, bus.image, bus.desc, 'bus', bus.link, item.catId, 'SEARCH', bus.price || 0, item.busKey, bus.setLink || '');
                 };
                 card.innerHTML = `
                     <div class="card-img-wrapper">
