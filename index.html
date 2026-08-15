@@ -72,6 +72,56 @@
         }
 
         /* ==========================================
+           GLOBAL LOADING ANIMATION OVERLAY
+        ========================================== */
+        #global-loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(11, 12, 16, 0.88);
+            backdrop-filter: blur(8px);
+            z-index: 99999;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loader-spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(69, 243, 255, 0.2);
+            border-top: 5px solid #45f3ff;
+            border-right: 5px solid #ff007f;
+            border-radius: 50%;
+            animation: spinLoader 0.8s linear infinite;
+            box-shadow: 0 0 20px rgba(69, 243, 255, 0.4);
+        }
+
+        .loader-text {
+            margin-top: 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            color: #45f3ff;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(69, 243, 255, 0.6);
+            animation: pulseText 1.2s infinite ease-in-out alternate;
+        }
+
+        @keyframes spinLoader {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulseText {
+            0% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* ==========================================
            2. MODERN NAVBAR & HEADER DESIGN
         ========================================== */
         .navbar {
@@ -784,6 +834,12 @@
 </head>
 <body>
 
+<!-- Global Loading Animation Component -->
+<div id="global-loading-overlay">
+    <div class="loader-spinner"></div>
+    <div class="loader-text">Inapakia, subiri kidogo...</div>
+</div>
+
 <div class="navbar" id="navicon" style="display:none;">
     <div class="nav-links">
         <a href="javascript:void(0);" class="nav-item" onclick="window.showcat()">Home</a>
@@ -816,18 +872,14 @@
             <video id="slideshow-video" muted playsinline style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;"></video>
         </div>
         <br>
-        <a href="    https://www.mediafire.com/file/38dm5iuqtw4735z/_KITENGO_GAMING_20017914.apk/file  " style="display:inline-block; background:linear-gradient(135deg,#00ff88,#00bfff); color:#000; padding:15px 25px; border-radius:12px; font-size:20px; font-weight:900; text-decoration:none; font-family:Arial,sans-serif; box-shadow:0 0 15px #00ff88;">
-    🎮 DOWNLOAD KITENGO GAMING APP 🎮
-</a> <br>
+        <a href="https://www.mediafire.com/file/38dm5iuqtw4735z/_KITENGO_GAMING_20017914.apk/file" style="display:inline-block; background:linear-gradient(135deg,#00ff88,#00bfff); color:#000; padding:15px 25px; border-radius:12px; font-size:20px; font-weight:900; text-decoration:none; font-family:Arial,sans-serif; box-shadow:0 0 15px #00ff88;">
+            🎮 DOWNLOAD KITENGO GAMING APP 🎮
+        </a> <br>
 
-
-
-
-        
         <div id="about">
-            <marquee direction="left"  behavior="scroll" loop="infinite">
-   KATIBU  KITENGO GAMING ⭐ UJIPATIE GAMES MBALI MBALI KAMA EURO TRUCK SIMULATOR2 TZ, MALEO NEW UPDATE TZ, GTA, RACING, FOOTBALL GAMES ZA ZINGINE KIBAO⭐NYOTE MNAKARIBISHWA  ⭐
-</marquee>
+            <marquee direction="left" behavior="scroll" loop="infinite">
+               KATIBU KITENGO GAMING ⭐ UJIPATIE GAMES MBALI MBALI KAMA EURO TRUCK SIMULATOR2 TZ, MALEO NEW UPDATE TZ, GTA, RACING, FOOTBALL GAMES ZA ZINGINE KIBAO⭐NYOTE MNAKARIBISHWA ⭐
+            </marquee>
         </div>
         <hr class="divider">
         <h2>CATEGORIES ZA MODS</h2>
@@ -880,7 +932,12 @@
     <input type="password" id="adminSecret" placeholder="Kodi ya Siri ya Admin">
     <hr>
     
-    <h3>1. USIMAMIZI WA CATEGORIES</h3>
+    <h3>1. USIMAMIZI & KUHARIRI CATEGORIES</h3>
+    <p style="color: #45f3ff; font-size: 13px;">Chagua Category iliyopo kutazama au kuifanyia marekebisho ya picha na maelezo:</p>
+    <select id="editCategorySelect"></select>
+    <button onclick="window.inspectCategoryForEdit()" style="background: linear-gradient(135deg, #00ff88, #7139e8); margin-bottom: 20px;">KAGUA & KUHARIRI CATEGORY</button>
+
+    <p style="color: #a4a6b0; font-size: 13px; font-weight: bold;">Au Ongeza Category Mpya:</p>
     <input type="text" id="newCatId" placeholder="ID ya Category (Mfano: yutong)">
     <input type="text" id="newCatName" placeholder="Jina la kuonyesha (Mfano: YUTONG MOD)">
     <input type="text" id="newCatDesc" placeholder="Maelezo mafupi ya kundi hili (Optional)">
@@ -889,7 +946,7 @@
     <input type="file" id="newCatImg" accept="image/*" style="display: none;">
     <div id="cat-upload-status" class="status-msg">Inashindilia picha...</div>
     
-    <button onclick="window.addCategory()">ONGEZA CATEGORY</button>
+    <button onclick="window.addCategory()">ONGEZA CATEGORY MPYA</button>
     <button onclick="window.deleteCategory(document.getElementById('newCatId').value)" style="background-color: #ff0000; margin-top: 5px;">FUTA CATEGORY MAALUM</button>
     <hr>
 
@@ -903,7 +960,8 @@
     <input type="file" id="uploadImg" accept="image/*" style="display: none;">
     <div id="bus-upload-status" class="status-msg">Inashindilia picha...</div>
     
-    <input type="text" id="uploadLink" placeholder="Link ya Mediafire">
+    <input type="text" id="uploadLink" placeholder="Link ya Mediafire (Download Link)">
+    <input type="text" id="uploadSetLink" placeholder="TikTok Video Link (Optional - Ya Button ya SETUP VIDEO)">
     
     <input type="number" id="uploadPrice" placeholder="Bei ya Mod (Mfano: 1000). Acha 0 kama ni ya bure.">
     <input type="text" id="uploadPassword" placeholder="Weka Password ya Premium Mod hapa">
@@ -912,7 +970,7 @@
     <hr>
 
     <h3>3. MABASI YA KUHARIRI (Bonyeza kwa sekunde 3)</h3>
-    <p style="color: #45f3ff; font-size: 13px;">Chagua category ili kuhariri au kufuta mabasi:</p>
+    <p style="color: #45f3ff; font-size: 13px;">Chagua category ili kuhariri jina, maelezo/captions, picha au kuongeza/kutoa link ya TikTok:</p>
     <select id="adminCategorySelect" onchange="if(this.value) window.showBusCategory(this.value, this.value, true)"></select>
     <hr>
 
